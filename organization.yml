@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: '2010-09-09-OC'
+Description: crc template for organization with master account 593615727207
+
+Organization:
+  ManagementAccount:
+    Type: OC::ORG::MasterAccount
+    Properties:
+      AccountName: pancheliuga
+      AccountId: '593615727207'
+      RootEmail: pancheliuga.o@gmail.com
+
+  OrganizationRoot:
+    Type: OC::ORG::OrganizationRoot
+    Properties:
+      DefaultOrganizationAccessRoleName: OrganizationAccountAccessRole
+      ServiceControlPolicies:
+        - !Ref DenyChangeOfOrgRoleSCP
+        - !Ref RestrictUnusedRegionsSCP
+
+  ProductionOU:
+    Type: OC::ORG::OrganizationalUnit
+    Properties:
+      OrganizationalUnitName: production
+      Accounts:
+        - !Ref ProductionAccount
+
+  DevelopmentOU:
+    Type: OC::ORG::OrganizationalUnit
+    Properties:
+      OrganizationalUnitName: development
+      Accounts:
+        - !Ref DevelopmentAccount
+
+  SharedOU:
+    Type: OC::ORG::OrganizationalUnit
+    Properties:
+      OrganizationalUnitName: shared
+      Accounts:
+        - !Ref SharedUsersAccount
+        - !Ref SharedServicesAccount
+        - !Ref SharedComplianceAccount
+
+  SharedUsersAccount:
+    Type: OC::ORG::Account
+    Properties:
+      RootEmail: pancheliuga.o+users@gmail.com
+      Alias: crc-users
+      AccountName: Shared Users Account
+      PasswordPolicy: !Ref PasswordPolicy
+      Tags:
+        budget-alarm-threshold: '5'
+        account-owner-email: pancheliuga.o@gmail.com
+
+  SharedServicesAccount:
+    Type: OC::ORG::Account
+    Properties:
+      Alias: crc-services
+      AccountName: Shared Services Account
+      RootEmail: pancheliuga.o+shared-services@gmail.com
+      Tags:
+        budget-alarm-threshold: '5'
+        account-owner-email: pancheliuga.o@gmail.com
+
+  SharedComplianceAccount:
+    Type: OC::ORG::Account
+    Properties:
+      Alias: crc-compliance
+      AccountName: Shared Compliance Account
+      RootEmail: pancheliuga.o+shared-compliance@gmail.com
+      Tags:
+        budget-alarm-threshold: '5'
+        account-owner-email: pancheliuga.o@gmail.com
+
+  DevelopmentAccount:
+    Type: OC::ORG::Account
+    Properties:
+      Alias: crc-dev
+      AccountName: Development Account
+      RootEmail: pancheliuga.o+dev@gmail.com
+      Tags:
+        budget-alarm-threshold: '5'
+        account-owner-email: pancheliuga.o@gmail.com
+
+  ProductionAccount:
+    Type: OC::ORG::Account
+    Properties:
+      AccountName: Production Account
+      RootEmail: pancheliuga.o+prod@gmail.com
+      Alias: crc-production
+      Tags:
+        budget-alarm-threshold: '5'
+        account-owner-email: pancheliuga.o@gmail.com
+
+  DenyChangeOfOrgRoleSCP:
+    Type: OC::ORG::ServiceControlPolicy
+    Properties:
+      PolicyName: DenyChangeOfOrgRole
+      Description: Deny changing the IAM role used for organization access
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyChangeOfOrgRole
+            Effect: Deny
+            Action:
+              - 'iam:Attach*'
+              - 'iam:Create*'
+              - 'iam:Delete*'
+              - 'iam:Detach*'
+              - 'iam:PutRole*'
+              - 'iam:Update*'
+            Resource:
+              - 'arn:aws:iam::*:role/OrganizationAccountAccessRole'
+
+  RestrictUnusedRegionsSCP:
+    Type: OC::ORG::ServiceControlPolicy
+    Properties:
+      PolicyName: RestrictUnusedRegions
+      Description: Restrict Unused regions
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyUnsupportedRegions
+            Effect: Deny
+            NotAction:
+              - 'cloudfront:*'
+              - 'iam:*'
+              - 'route53:*'
+              - 'support:*'
+              - 'budgets:*'
+            Resource: '*'
+            Condition:
+              StringNotEquals:
+                'aws:RequestedRegion':
+                  - eu-central-1
+
+  PasswordPolicy:
+    Type: OC::ORG::PasswordPolicy
+    Properties:
+      MaxPasswordAge: 30
+      MinimumPasswordLength: 10
+      RequireLowercaseCharacters: true
+      RequireNumbers: true
+      RequireSymbols: true
+      RequireUppercaseCharacters: true
+      PasswordReusePrevention: 5
+      AllowUsersToChangePassword: true
