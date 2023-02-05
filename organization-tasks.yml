@@ -1,0 +1,24 @@
+OrganizationUpdate:
+  Skip: true
+  Type: update-organization
+  Template: ./organization.yml
+
+CloudTrail:
+  Type: update-stacks
+  Template: ./tasks/cloudtrail.yml
+  StackName: cloudtrail
+  StackDescription: Cloudtrail crc template
+  MaxConcurrentStacks: 10
+  FailedStackTolerance: 10
+
+BudgetAlarms:
+  Type: update-stacks
+  Template: ./tasks/budget-alarms.yml
+  StackName: budget-alarms
+  MaxConcurrentStacks: 10
+  FailedStackTolerance: 10
+  DefaultOrganizationBindingRegion: eu-central-1
+  DefaultOrganizationBinding:
+    AccountsWithTag: budget-alarm-threshold
+  Parameters:
+    resourcePrefix: crc
