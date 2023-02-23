@@ -14,7 +14,7 @@ DefaultOrganizationBindingRegion: eu-central-1
 OrganizationBindings:
   # Binding for: S3Bucket, S3BucketPolicy
   CloudTrailBucketBinding:
-    Account: !Ref SharedComplianceAccount
+    Account: !Ref LogArchiveProdAccount
 
   # Binding for: CloudTrail, CloudTrailLogGroup, CloudTrailLogGroupRole
   CloudTrailBinding:
@@ -40,7 +40,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: !Sub '${resourcePrefix}-cloudtrail-${SharedComplianceAccount}'
+      BucketName: !Sub '${resourcePrefix}-cloudtrail-${LogArchiveProdAccount}'
       LifecycleConfiguration:
         Rules:
           - ExpirationInDays: !Ref logDeletionDays

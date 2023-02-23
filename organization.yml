@@ -1,13 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09-OC'
-Description: crc template for organization with master account 593615727207
+Description: CRC project | Infrastructure as Code (IaC) for AWS Organizations
 
 Organization:
   ManagementAccount:
     Type: OC::ORG::MasterAccount
     Properties:
-      AccountName: pancheliuga
-      AccountId: '593615727207'
-      RootEmail: pancheliuga.o@gmail.com
+      AccountName: CRC Management
+      AccountId: '657006586504'
+      RootEmail: crc.pancheliuga@gmail.com
 
   OrganizationRoot:
     Type: OC::ORG::OrganizationRoot
@@ -17,76 +17,79 @@ Organization:
         - !Ref DenyChangeOfOrgRoleSCP
         - !Ref RestrictUnusedRegionsSCP
 
-  ProductionOU:
+  SecurityOU:
     Type: OC::ORG::OrganizationalUnit
     Properties:
-      OrganizationalUnitName: production
-      Accounts:
-        - !Ref ProductionAccount
+      OrganizationalUnitName: Security
+      OrganizationalUnits:
+        - !Ref SecProdOU
 
-  DevelopmentOU:
+  SecProdOU:
     Type: OC::ORG::OrganizationalUnit
     Properties:
-      OrganizationalUnitName: development
+      OrganizationalUnitName: Prod
       Accounts:
-        - !Ref DevelopmentAccount
+        - !Ref LogArchiveProdAccount
+        - !Ref SecurityToolingProdAccount
 
-  SharedOU:
+  WorkloadsOU:
     Type: OC::ORG::OrganizationalUnit
     Properties:
-      OrganizationalUnitName: shared
+      OrganizationalUnitName: Workloads
+      OrganizationalUnits:
+        - !Ref WorkProdOU
+        - !Ref WorkTestOU
+
+  WorkProdOU:
+    Type: OC::ORG::OrganizationalUnit
+    Properties:
+      OrganizationalUnitName: Prod
       Accounts:
-        - !Ref SharedUsersAccount
-        - !Ref SharedServicesAccount
-        - !Ref SharedComplianceAccount
+        - !Ref WorkloadAProdAccount
 
-  SharedUsersAccount:
+  WorkTestOU:
+    Type: OC::ORG::OrganizationalUnit
+    Properties:
+      OrganizationalUnitName: Test
+      Accounts:
+        - !Ref WorkloadATestAccount
+
+  LogArchiveProdAccount:
     Type: OC::ORG::Account
     Properties:
-      RootEmail: pancheliuga.o+users@gmail.com
-      Alias: crc-users
-      AccountName: Shared Users Account
-      PasswordPolicy: !Ref PasswordPolicy
+      Alias: crc-log-archive-prod
+      AccountName: log-archive-prod
+      RootEmail: crc.pancheliuga+log-archive-prod@gmail.com
       Tags:
         budget-alarm-threshold: '5'
         account-owner-email: pancheliuga.o@gmail.com
 
-  SharedServicesAccount:
+  SecurityToolingProdAccount:
     Type: OC::ORG::Account
     Properties:
-      Alias: crc-services
-      AccountName: Shared Services Account
-      RootEmail: pancheliuga.o+shared-services@gmail.com
+      Alias: crc-security-tooling-prod
+      AccountName: security-tooling-prod
+      RootEmail: crc.pancheliuga+security-tooling-prod@gmail.com
       Tags:
         budget-alarm-threshold: '5'
         account-owner-email: pancheliuga.o@gmail.com
 
-  SharedComplianceAccount:
+  WorkloadAProdAccount:
     Type: OC::ORG::Account
     Properties:
-      Alias: crc-compliance
-      AccountName: Shared Compliance Account
-      RootEmail: pancheliuga.o+shared-compliance@gmail.com
+      Alias: crc-work-load-a-prod
+      AccountName: work-load-a-prod
+      RootEmail: crc.pancheliuga+work-load-a-prod@gmail.com
       Tags:
         budget-alarm-threshold: '5'
         account-owner-email: pancheliuga.o@gmail.com
 
-  DevelopmentAccount:
+  WorkloadATestAccount:
     Type: OC::ORG::Account
     Properties:
-      Alias: crc-dev
-      AccountName: Development Account
-      RootEmail: pancheliuga.o+dev@gmail.com
-      Tags:
-        budget-alarm-threshold: '5'
-        account-owner-email: pancheliuga.o@gmail.com
-
-  ProductionAccount:
-    Type: OC::ORG::Account
-    Properties:
-      AccountName: Production Account
-      RootEmail: pancheliuga.o+prod@gmail.com
-      Alias: crc-production
+      Alias: crc-work-load-a-test
+      AccountName: work-load-a-test
+      RootEmail: crc.pancheliuga+work-load-a-test@gmail.com
       Tags:
         budget-alarm-threshold: '5'
         account-owner-email: pancheliuga.o@gmail.com
@@ -132,15 +135,3 @@ Organization:
               StringNotEquals:
                 'aws:RequestedRegion':
                   - eu-central-1
-
-  PasswordPolicy:
-    Type: OC::ORG::PasswordPolicy
-    Properties:
-      MaxPasswordAge: 30
-      MinimumPasswordLength: 10
-      RequireLowercaseCharacters: true
-      RequireNumbers: true
-      RequireSymbols: true
-      RequireUppercaseCharacters: true
-      PasswordReusePrevention: 5
-      AllowUsersToChangePassword: true
